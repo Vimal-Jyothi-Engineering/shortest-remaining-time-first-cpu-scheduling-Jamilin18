@@ -1,66 +1,67 @@
 #include <stdio.h>
 
 int main() {
-    int n, i, time = 0, smallest;
-    int completed = 0;
-    int arrival[20], burst[20], remaining[20];
-    int waiting[20], turnaround[20];
-    int finish_time;
-    int total_wt = 0, total_tat = 0;
+    int n;
 
-    printf("Enter number of processes: ");
     scanf("%d", &n);
 
-    for(i = 0; i < n; i++) {
-        printf("\nProcess %d\n", i+1);
+    char pid[20][10];
+    int at[20], bt[20], rt[20];
+    int wt[20], tat[20];
 
-        printf("Arrival Time: ");
-        scanf("%d", &arrival[i]);
-
-        printf("Burst Time: ");
-        scanf("%d", &burst[i]);
-
-        remaining[i] = burst[i];
+    for (int i = 0; i < n; i++) {
+        scanf("%s %d %d", pid[i], &at[i], &bt[i]);
+        rt[i] = bt[i];
     }
 
-    remaining[19] = 9999; // sentinel value
+    int complete = 0, time = 0;
+    int min_rt, shortest = -1;
+    int finish_time;
 
-    while(completed != n) {
+    while (complete < n) {
 
-        smallest = 19;
+        min_rt = 100000;
+        shortest = -1;
 
-        for(i = 0; i < n; i++) {
-            if(arrival[i] <= time && remaining[i] < remaining[smallest] && remaining[i] > 0) {
-                smallest = i;
+        for (int i = 0; i < n; i++) {
+            if (at[i] <= time && rt[i] > 0 && rt[i] < min_rt) {
+                min_rt = rt[i];
+                shortest = i;
             }
         }
 
-        remaining[smallest]--;
+        if (shortest == -1) {
+            time++;
+            continue;
+        }
 
-        if(remaining[smallest] == 0) {
-            completed++;
+        rt[shortest]--;
+
+        if (rt[shortest] == 0) {
+            complete++;
 
             finish_time = time + 1;
 
-            waiting[smallest] = finish_time - burst[smallest] - arrival[smallest];
-            turnaround[smallest] = finish_time - arrival[smallest];
+            wt[shortest] = finish_time - bt[shortest] - at[shortest];
 
-            total_wt += waiting[smallest];
-            total_tat += turnaround[smallest];
+            if (wt[shortest] < 0)
+                wt[shortest] = 0;
+
+            tat[shortest] = bt[shortest] + wt[shortest];
         }
 
         time++;
     }
 
-    printf("\n\nProcess\tArrival\tBurst\tWaiting\tTurnaround\n");
+    float total_wt = 0, total_tat = 0;
 
-    for(i = 0; i < n; i++) {
-        printf("P%d\t%d\t%d\t%d\t%d\n",
-               i+1, arrival[i], burst[i], waiting[i], turnaround[i]);
+    for (int i = 0; i < n; i++) {
+        total_wt += wt[i];
+        total_tat += tat[i];
     }
 
-    printf("\nAverage Waiting Time = %.2f", (float)total_wt/n);
-    printf("\nAverage Turnaround Time = %.2f\n", (float)total_tat/n);
+    printf("Average Waiting Time: %.2f\n", total_wt / n);
+    printf("Average Turnaround Time: %.2f\n", total_tat / n);
 
     return 0;
 }
